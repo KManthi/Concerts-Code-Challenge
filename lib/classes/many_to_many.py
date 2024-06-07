@@ -27,25 +27,26 @@ class Band:
         self._hometown = hometown
 
 
-
     def concerts(self):
-        pass
+        return [concert for concert in Concert.all if concert.band == self]
 
     def venues(self):
-        pass
+        return list({concert.venue for concert in self.concerts()})
 
     def play_in_venue(self, venue, date):
-        pass
+        return Concert(date, self, venue)
 
     def all_introductions(self):
-        pass
+        return [concert.introduction() for concert in self.concerts()]
 
 
 class Concert:
+    all = []
     def __init__(self, date, band, venue):
         self.date = date
         self.band = band
         self.venue = venue
+        Concert.all.append(self)
 
     @property
     def date(self):
@@ -57,12 +58,32 @@ class Concert:
             self._date = date
         else:
             raise ValueError("Concert date must be a non-empty string")
+        
+    @property
+    def venue(self):
+        return self._venue
+    
+    @venue.setter
+    def venue(self, venue):
+        if not isinstance(venue, Venue):
+            raise ValueError("Concert venue must be of type Venue")
+        self._venue = venue
+
+    @property
+    def band(self):
+        return self._band
+    
+    @band.setter
+    def band(self, band):
+        if not isinstance(band, Band):
+            raise ValueError("Concert band must be of type Band")
+        self._band = band
 
     def hometown_show(self):
-        pass
+        return self.band.hometown == self.venue.city
 
     def introduction(self):
-        pass
+        return f"Hello {self.venue.city}!!!!! We are {self.band.name} and we're from {self.band.hometown}"
 
 
 class Venue:
@@ -93,7 +114,10 @@ class Venue:
             raise ValueError("City name must be a non-empty string")
 
     def concerts(self):
-        pass
+        return [concert for concert in Concert.all if concert.venue == self]
 
     def bands(self):
-        pass
+        return list({concert.band for concert in self.concerts()})
+    
+    def concert_on(self, date):
+        return next((concert for concert in self.concerts() if concert.date == date), None)
